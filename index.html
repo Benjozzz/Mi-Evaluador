@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Evaluador de Aplicativo Educativo</title>
+  <style>
+  body {
+    font-family: Arial, sans-serif;
+    background-color: #f8f9fa;
+    margin: 0;
+    padding: 0;
+  }
+  .container {
+    max-width: 900px;
+    margin: 40px auto;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+  }
+  h1 {
+    text-align: center;
+  }
+  .parametro {
+    margin-bottom: 20px;
+  }
+  .estrellas {
+    display: flex;
+    gap: 8px;
+    margin-top: 5px;
+  }
+  .estrella-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: none;
+    background-color: #e9ecef;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.1s;
+  }
+  .estrella-btn:hover {
+    background-color: #ffe082;
+    transform: scale(1.1);
+  }
+  .estrella-btn.activo {
+    background-color: #ffc107;
+    color: #000;
+  }
+  
+.estrellas button {
+    background-color: #f4f4f4;
+    border: 1px solid #aaa;
+    margin: 2px;
+    padding: 5px 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.2s, color 0.2s;
+  }
+
+  .estrellas button:hover {
+    background-color: #ffe1b3;
+  }
+
+  .estrellas button.activo {
+    background-color: orange;
+    color: white;
+    border-color: orange;
+  }
+
+
+</style>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+</head>
+<body>
+  <div class="container">
+    <h1>Evaluador de Aplicativo Educativo</h1>
+    <p>Califica los siguientes parámetros del 1 al 5 y deja un comentario opcional.</p>
+
+    <form id="formulario">
+      <label>Tu nombre (opcional):</label>
+      <input type="text" id="nombre" placeholder="Ej. María" />
+
+      <div id="parametros"></div>
+
+      <label>Comentario (opcional):</label>
+      <textarea id="comentario" rows="3" placeholder="Qué te gustó, qué mejorarías..."></textarea>
+
+      <button type="submit" class="btn-enviar">Enviar</button>
+      <button type="button" id="btn-limpiar" class="btn-limpiar">Limpiar</button>
+    </form>
+
+    <div class="stats">
+      <h3>Estadísticas</h3>
+      <p>Entradas registradas: <span id="totalEntradas">0</span></p>
+      <p>Promedio general: <span id="promedioGeneral">0</span> / 5</p>
+      <ul id="promediosLista"></ul>
+     <button id="btn-pdf" class="btn-pdf">Descargar PDF</button>
+      <button id="btn-borrar" class="btn-borrar">Borrar todo</button>
+    </div>
+
+    <div class="comentarios">
+      <h3>Últimas 10 entradas</h3>
+      <div id="listaComentarios"></div>
+    </div>
+  </div>
+
+  <script>
+  // Lista de factores (tus 8 factores)
+  const parametros = [
+    "Usabilidad",
+    "Eficiencia",
+    "Seguridad",
+    "Mantenibilidad",
+    "Compatibilidad",
+    "Funcionabilidad",
+    "Fiabilidad",
+    "Portabilidad"
+  ];
+
+  const contenedor = document.getElementById('parametros');
+  const listaComentarios = document.getElementById('listaComentarios');
+  const promedioGeneralEl = document.getElementById('promedioGeneral');
+  const totalEntradasEl = document.getElementById('totalEntradas');
+
+  // Estado
+  let calificacionActual = {
+  Usabilidad: 0,
+  Eficiencia: 0,
+  Seguridad: 0,
+  Mantenibilidad: 0,
+  Compatibilidad: 0,
+  Funcionabilidad: 0,
+  Fiabilidad: 0,
+  Portabilidad: 0
+};
+
+  let entradas = JSON.parse(localStorage.getItem('calificaciones_app_educativa') || '[]');
+
+  // Renderiza controles para cada parámetro
+  function renderParametros() {
+    contenedor.innerHTML = '';
+    // Inicializa calificacionActual con valor por defecto 3 (o el que prefieras)
+    parametros.forEach(p => {
+      if (typeof calificacionActual[p] === 'undefined') calificacionActual[p] = 0;
+
+      const div = document.createElement('div');
+      div.className = 'parametro';
+      // Crear label y contenedor de botones
+      const label = document.createElement('label');
+      label.textContent = p;
+      const estrellas = document.createElement('div');
+      estrellas.className = 'estrellas';
+      estrellas.id = `estrellas-${p}`;
+      div.appendChild(label);
+      div.appendChild(estrellas);
+      contenedor.appendChild(div);
+
+      // Crear 5 botones (type=button para evitar submit)
+      for (let i = 1; i <= 5; i++) {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.textContent = i;
+        // Clase visual para activo
+        if (i <= calificacionActual[p]) btn.classList.add('activo');
+        btn.addEventListener('click', () => {
+          // Guardar la calificación (número) y actualizar visuales
+          calificacionActual[p] = i;
+          Array.from(estrellas.children).forEach(b => b.classList.remove('activo'));
+          for (let j = 0; j < i; j++) estrellas.children[j].classList.add('activo');
+        });
+        estrellas.appendChild(btn);
+      }
+    });
+  }
+
+  // Guardar en localStorage
+  function guardarLocal() {
+    localStorage.setItem('calificaciones_app_educativa', JSON.stringify(entradas));
+  }
+
+  // Actualizar estadísticas: promedio general (sobre los promedios guardados)
+  function actualizarEstadisticas() {
+    totalEntradasEl.textContent = entradas.length;
+    if (entradas.length === 0) {
+      promedioGeneralEl.textContent = 0;
+      listaComentarios.innerHTML = '<p>No hay calificaciones aún.</p>';
+      return;
+    }
+
+    // Promedio general = promedio de los promedios guardados
+    const totalPromedios = entradas.reduce((acc, e) => acc + (Number(e.promedio) || 0), 0);
+    const promGeneral = (totalPromedios / entradas.length).toFixed(2);
+    promedioGeneralEl.textContent = promGeneral;
+
+    // Mostrar ultimas 10 entradas con su promedio
+    listaComentarios.innerHTML = entradas.slice(0, 10).map(e => `
+      <div style='border-bottom:1px solid #ddd; padding:6px 0;'>
+        <small>${new Date(e.fecha).toLocaleString()}</small><br>
+        <strong>${e.nombre}</strong><br>
+        Promedio total: ${e.promedio} / 5<br>
+        ${e.comentario ? `<em>"${e.comentario}"</em>` : ''}
+      </div>
+    `).join('');
+  }
+
+  // Manejo del envío del formulario
+  document.getElementById('formulario').addEventListener('submit', e => {
+    e.preventDefault();
+    const nombre = document.getElementById('nombre').value || 'Anónimo';
+    const comentario = document.getElementById('comentario').value.trim();
+
+    // Asegurarse que calificacionActual tiene valores numéricos para todos los parametros
+    parametros.forEach(p => {
+      if (typeof calificacionActual[p] === 'undefined') calificacionActual[p] = 3;
+      calificacionActual[p] = Number(calificacionActual[p]);
+    });
+
+    // Calcular promedio final de los 8 factores
+    const sumaFactores = parametros.reduce((acc, p) => acc + (Number(calificacionActual[p]) || 0), 0);
+    const promedioFinal = +(sumaFactores / parametros.length).toFixed(2);
+
+    // Crear entrada que guarda SÓLO el promedio (y opcionalmente los detalles si quieres)
+    const nueva = {
+      id: Date.now(),
+      fecha: new Date().toISOString(),
+      nombre,
+      comentario,
+      promedio: promedioFinal,
+      // detalles: { ...calificacionActual } // opcional: guarda las 8 si lo necesitas más tarde
+    };
+
+    entradas.unshift(nueva);
+    guardarLocal();
+    actualizarEstadisticas();
+
+    // Reset formulario y volver a renderizar controles (si quieres valores por defecto)
+    e.target.reset();
+    // Reiniciar calificacionActual a valores por defecto (3)
+    calificacionActual = {};
+    renderParametros();
+  });
+
+  // Limpiar form visual sin borrar entradas
+  document.getElementById('btn-limpiar').addEventListener('click', () => {
+    document.getElementById('formulario').reset();
+    calificacionActual = {};
+    renderParametros();
+  });
+
+  // Borrar todo
+  document.getElementById('btn-borrar').addEventListener('click', () => {
+    if (!confirm('¿Borrar todas las entradas guardadas?')) return;
+    entradas = [];
+    guardarLocal();
+    actualizarEstadisticas();
+  });
+
+  // Descargar resultados en PDF
+document.getElementById('btn-pdf').addEventListener('click', () => {
+  if (entradas.length === 0) return alert('No hay datos para exportar');
+
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF();
+  let y = 20;
+
+  doc.setFontSize(16);
+  doc.text('Reporte de Calificaciones - Aplicativo Educativo', 10, y);
+  y += 10;
+
+  doc.setFontSize(12);
+  entradas.slice(0, 10).forEach((e, idx) => {
+    doc.text(`Entrada ${idx + 1}`, 10, y);
+    y += 6;
+    doc.text(`Fecha: ${new Date(e.fecha).toLocaleString()}`, 10, y);
+    y += 6;
+    doc.text(`Nombre: ${e.nombre}`, 10, y);
+    y += 6;
+    doc.text(`Promedio: ${e.promedio} / 5`, 10, y);
+    y += 6;
+    if (e.comentario) {
+      doc.text(`Comentario: ${e.comentario}`, 10, y);
+      y += 10;
+    } else {
+      y += 4;
+    }
+    if (y > 270) { doc.addPage(); y = 20; }
+  });
+
+  doc.save('reporte_calificaciones.pdf');
+});
+
+
+  // Inicializar
+  renderParametros();
+  actualizarEstadisticas();
+</script>
+
+</body>
+</html>
