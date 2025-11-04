@@ -5,312 +5,331 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Evaluador de Aplicativo Educativo</title>
   <style>
-  body {
-    font-family: Arial, sans-serif;
-    margin: 0;
-    padding: 0;
-    background-image: url("fondo CS.jpeg");
-    background-size: cover;
-    background-repeat: no-repeat;
-    background-attachment: fixed; 
-    background-position: center;
-  }
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-image: url("fondo CS.jpeg");
+      background-size: cover;
+      background-repeat: no-repeat;
+      background-attachment: fixed;
+      background-position: center;
+    }
 
-  .container {
-    max-width: 900px;
-    margin: 40px auto;
-    background: rgba(255, 255, 255, 0.9); /* 🔹 color blanco semitransparente */
-    border-radius: 12px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    padding: 20px;
-  }
+    /* 🔹 Barra de navegación */
+    .navbar {
+      display: flex;
+      justify-content: center;
+      background-color: rgba(0, 0, 0, 0.8);
+      padding: 10px 0;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
 
-  h1 {
-    text-align: center;
-  }
+    .navbar button {
+      background: none;
+      border: none;
+      color: #ddd;
+      font-size: 18px;
+      margin: 0 15px;
+      cursor: pointer;
+      padding-bottom: 5px;
+      border-bottom: 2px solid transparent;
+      transition: all 0.3s;
+    }
 
-  .parametro {
-    margin-bottom: 20px;
-  }
+    .navbar button:hover {
+      color: #fff;
+    }
 
-  .estrellas {
-    display: flex;
-    gap: 8px;
-    margin-top: 5px;
-  }
+    .navbar button.activo {
+      border-bottom: 2px solid #fff;
+      color: #fff;
+    }
 
-  .estrella-btn {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    border: none;
-    background-color: #e9ecef;
-    font-size: 16px;
-    font-weight: bold;
-    cursor: pointer;
-    transition: background 0.2s, transform 0.1s;
-  }
+    .container {
+      max-width: 900px;
+      margin: 40px auto;
+      background: rgba(255, 255, 255, 0.9);
+      border-radius: 12px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      padding: 20px;
+    }
 
-  .estrella-btn:hover {
-    background-color: #ffe082;
-    transform: scale(1.1);
-  }
+    section {
+      display: none;
+    }
 
-  .estrella-btn.activo {
-    background-color: #ffc107;
-    color: #000;
-  }
+    section.activo {
+      display: block;
+    }
 
-  .estrellas button {
-    background-color: #f4f4f4;
-    border: 1px solid #aaa;
-    margin: 2px;
-    padding: 5px 10px;
-    border-radius: 6px;
-    cursor: pointer;
-    transition: background-color 0.2s, color 0.2s;
-  }
+    h1 {
+      text-align: center;
+    }
 
-  .estrellas button:hover {
-    background-color: #ffe1b3;
-  }
+    .parametro {
+      margin-bottom: 20px;
+    }
 
-  .estrellas button.activo {
-    background-color: orange;
-    color: white;
-    border-color: orange;
-  }
-</style>
+    .estrellas {
+      display: flex;
+      gap: 8px;
+      margin-top: 5px;
+    }
 
+    .estrella-btn {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      border: none;
+      background-color: #e9ecef;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.1s;
+    }
 
-</style>
+    .estrella-btn:hover {
+      background-color: #ffe082;
+      transform: scale(1.1);
+    }
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    .estrella-btn.activo {
+      background-color: #ffc107;
+      color: #000;
+    }
 
+    .estrellas button {
+      background-color: #f4f4f4;
+      border: 1px solid #aaa;
+      margin: 2px;
+      padding: 5px 10px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background-color 0.2s, color 0.2s;
+    }
+
+    .estrellas button:hover {
+      background-color: #ffe1b3;
+    }
+
+    .estrellas button.activo {
+      background-color: orange;
+      color: white;
+      border-color: orange;
+    }
+  </style>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 </head>
 <body>
-  <div class="container">
-    <h1>Evaluador de Aplicativo Educativo</h1>
-    <p>Califica los siguientes parámetros del 1 al 5 y deja un comentario opcional.</p>
-
-    <form id="formulario">
-      <label>Tu nombre (opcional):</label>
-      <input type="text" id="nombre" placeholder="Ej. María" />
-
-      <div id="parametros"></div>
-
-      <label>Comentario (opcional):</label>
-      <textarea id="comentario" rows="3" placeholder="Qué te gustó, qué mejorarías..."></textarea>
-
-      <button type="submit" class="btn-enviar">Enviar</button>
-      <button type="button" id="btn-limpiar" class="btn-limpiar">Limpiar</button>
-    </form>
-
-    <div class="stats">
-      <h3>Estadísticas</h3>
-      <p>Entradas registradas: <span id="totalEntradas">0</span></p>
-      <p>Promedio general: <span id="promedioGeneral">0</span> / 5</p>
-      <ul id="promediosLista"></ul>
-     <button id="btn-pdf" class="btn-pdf">Descargar PDF</button>
-      <button id="btn-borrar" class="btn-borrar">Borrar todo</button>
-    </div>
-
-    <div class="comentarios">
-      <h3>Últimas 10 entradas</h3>
-      <div id="listaComentarios"></div>
-    </div>
+  <!-- 🔹 Barra de navegación -->
+  <div class="navbar">
+    <button class="nav-btn activo" data-seccion="inicio">Inicio</button>
+    <button class="nav-btn" data-seccion="normas">Normas</button>
+    <button class="nav-btn" data-seccion="autores">Autores</button>
   </div>
 
-  <script>
-  // Lista de factores (tus 8 factores)
-  const parametros = [
-    "Usabilidad",
-    "Eficiencia",
-    "Seguridad",
-    "Mantenibilidad",
-    "Compatibilidad",
-    "Funcionabilidad",
-    "Fiabilidad",
-    "Portabilidad"
-  ];
+  <!-- 🔹 SECCIONES -->
+  <section id="inicio" class="activo">
+    <div class="container">
+      <h1>Evaluador de Aplicativo Educativo</h1>
+      <p>Califica los siguientes parámetros del 1 al 5 y deja un comentario opcional.</p>
+      <form id="formulario">
+        <label>Tu nombre (opcional):</label>
+        <input type="text" id="nombre" placeholder="Ej. María" />
+        <div id="parametros"></div>
+        <label>Comentario (opcional):</label>
+        <textarea id="comentario" rows="3" placeholder="Qué te gustó, qué mejorarías..."></textarea>
+        <button type="submit" class="btn-enviar">Enviar</button>
+        <button type="button" id="btn-limpiar" class="btn-limpiar">Limpiar</button>
+      </form>
 
-  const contenedor = document.getElementById('parametros');
-  const listaComentarios = document.getElementById('listaComentarios');
-  const promedioGeneralEl = document.getElementById('promedioGeneral');
-  const totalEntradasEl = document.getElementById('totalEntradas');
-
-  // Estado
-  let calificacionActual = {
-  Usabilidad: 0,
-  Eficiencia: 0,
-  Seguridad: 0,
-  Mantenibilidad: 0,
-  Compatibilidad: 0,
-  Funcionabilidad: 0,
-  Fiabilidad: 0,
-  Portabilidad: 0
-};
-
-  let entradas = JSON.parse(localStorage.getItem('calificaciones_app_educativa') || '[]');
-
-  // Renderiza controles para cada parámetro
-  function renderParametros() {
-    contenedor.innerHTML = '';
-    // Inicializa calificacionActual con valor por defecto 3 (o el que prefieras)
-    parametros.forEach(p => {
-      if (typeof calificacionActual[p] === 'undefined') calificacionActual[p] = 0;
-
-      const div = document.createElement('div');
-      div.className = 'parametro';
-      // Crear label y contenedor de botones
-      const label = document.createElement('label');
-      label.textContent = p;
-      const estrellas = document.createElement('div');
-      estrellas.className = 'estrellas';
-      estrellas.id = `estrellas-${p}`;
-      div.appendChild(label);
-      div.appendChild(estrellas);
-      contenedor.appendChild(div);
-
-      // Crear 5 botones (type=button para evitar submit)
-      for (let i = 1; i <= 5; i++) {
-        const btn = document.createElement('button');
-        btn.type = 'button';
-        btn.textContent = i;
-        // Clase visual para activo
-        if (i <= calificacionActual[p]) btn.classList.add('activo');
-        btn.addEventListener('click', () => {
-          // Guardar la calificación (número) y actualizar visuales
-          calificacionActual[p] = i;
-          Array.from(estrellas.children).forEach(b => b.classList.remove('activo'));
-          for (let j = 0; j < i; j++) estrellas.children[j].classList.add('activo');
-        });
-        estrellas.appendChild(btn);
-      }
-    });
-  }
-
-  // Guardar en localStorage
-  function guardarLocal() {
-    localStorage.setItem('calificaciones_app_educativa', JSON.stringify(entradas));
-  }
-
-  // Actualizar estadísticas: promedio general (sobre los promedios guardados)
-  function actualizarEstadisticas() {
-    totalEntradasEl.textContent = entradas.length;
-    if (entradas.length === 0) {
-      promedioGeneralEl.textContent = 0;
-      listaComentarios.innerHTML = '<p>No hay calificaciones aún.</p>';
-      return;
-    }
-
-    // Promedio general = promedio de los promedios guardados
-    const totalPromedios = entradas.reduce((acc, e) => acc + (Number(e.promedio) || 0), 0);
-    const promGeneral = (totalPromedios / entradas.length).toFixed(2);
-    promedioGeneralEl.textContent = promGeneral;
-
-    // Mostrar ultimas 10 entradas con su promedio
-    listaComentarios.innerHTML = entradas.slice(0, 10).map(e => `
-      <div style='border-bottom:1px solid #ddd; padding:6px 0;'>
-        <small>${new Date(e.fecha).toLocaleString()}</small><br>
-        <strong>${e.nombre}</strong><br>
-        Promedio total: ${e.promedio} / 5<br>
-        ${e.comentario ? `<em>"${e.comentario}"</em>` : ''}
+      <div class="stats">
+        <h3>Estadísticas</h3>
+        <p>Entradas registradas: <span id="totalEntradas">0</span></p>
+        <p>Promedio general: <span id="promedioGeneral">0</span> / 5</p>
+        <ul id="promediosLista"></ul>
+        <button id="btn-pdf" class="btn-pdf">Descargar PDF</button>
+        <button id="btn-borrar" class="btn-borrar">Borrar todo</button>
       </div>
-    `).join('');
-  }
 
-  // Manejo del envío del formulario
-  document.getElementById('formulario').addEventListener('submit', e => {
-    e.preventDefault();
-    const nombre = document.getElementById('nombre').value || 'Anónimo';
-    const comentario = document.getElementById('comentario').value.trim();
+      <div class="comentarios">
+        <h3>Últimas 10 entradas</h3>
+        <div id="listaComentarios"></div>
+      </div>
+    </div>
+  </section>
 
-    // Asegurarse que calificacionActual tiene valores numéricos para todos los parametros
-    parametros.forEach(p => {
-      if (typeof calificacionActual[p] === 'undefined') calificacionActual[p] = 3;
-      calificacionActual[p] = Number(calificacionActual[p]);
+  <!-- 🔹 SECCIÓN NORMAS -->
+  <section id="normas">
+    <div class="container">
+      <h3><a href="https://www.iso.org/standard/78176.html?utm_source=" target="_blank" rel="noopener noreferrer">ISO/IEC 25010 – Calidad del Software</a></h3>
+      <p><strong>Propósito:</strong> Define un modelo de calidad para productos de software.</p>
+      <p><strong>Aspectos clave:</strong> Establece 8 características de calidad (como funcionalidad, confiabilidad, usabilidad, eficiencia, mantenibilidad y portabilidad).</p>
+      <p><strong>En resumen:</strong> Sirve para evaluar y mejorar la calidad interna y externa del software.</p>
+
+      <h3><a href="https://www.iso.org/obp/ui#iso:std:iso:9001:ed-5:v1:es" target="_blank" rel="noopener noreferrer">ISO 9001 – Gestión de la Calidad</a></h3>
+      <p><strong>Propósito:</strong> Norma internacional para sistemas de gestión de calidad aplicable a cualquier tipo de organización.</p>
+      <p><strong>Aspectos clave:</strong> Se basa en principios como enfoque al cliente, mejora continua, liderazgo y gestión por procesos.</p>
+      <p><strong>En resumen:</strong> Busca asegurar la calidad de los productos o servicios mediante una gestión organizacional eficiente.</p>
+
+      <h3><a href="https://cmmiinstitute.com/cmmi/intro-3" target="_blank" rel="noopener noreferrer">CMMI (Capability Maturity Model Integration)</a></h3>
+      <p><strong>Propósito:</strong> Es un modelo para mejorar los procesos de desarrollo y gestión en organizaciones.</p>
+      <p><strong>Aspectos clave:</strong> Define niveles de madurez (del 1 al 5) que reflejan qué tan optimizados están los procesos.</p>
+      <p><strong>En resumen:</strong> Ayuda a las empresas a mejorar la eficiencia, la calidad y la gestión de proyectos de software.</p>
+    </div>
+  </section>
+
+  <!-- 🔹 SECCIÓN AUTORES (actualizada) -->
+  <section id="autores">
+    <div class="container">
+      <h1>Autores</h1>
+      <ul>
+        <li>Andrés Camilo Zambrano Pacheco</li>
+        <li>Juan Camilo Olivera Carrillo</li>
+        <li>David Humberto Bernal Forigua</li>
+      </ul>
+      <hr style="margin: 20px 0; border: 1px solid #ccc;" />
+      <p><strong>Corporación Unificada Nacional de Educación Superior – CUN</strong></p>
+      <p><strong>Ficha:</strong> 54430</p>
+    </div>
+  </section>
+
+  <!-- 🔹 SCRIPT PRINCIPAL -->
+  <script>
+    const parametros = [
+      "Usabilidad","Eficiencia","Seguridad","Mantenibilidad",
+      "Compatibilidad","Funcionabilidad","Fiabilidad","Portabilidad"
+    ];
+
+    const contenedor = document.getElementById('parametros');
+    const listaComentarios = document.getElementById('listaComentarios');
+    const promedioGeneralEl = document.getElementById('promedioGeneral');
+    const totalEntradasEl = document.getElementById('totalEntradas');
+    let calificacionActual = {Usabilidad:0,Eficiencia:0,Seguridad:0,Mantenibilidad:0,Compatibilidad:0,Funcionabilidad:0,Fiabilidad:0,Portabilidad:0};
+    let entradas = JSON.parse(localStorage.getItem('calificaciones_app_educativa') || '[]');
+
+    function renderParametros() {
+      contenedor.innerHTML = '';
+      parametros.forEach(p => {
+        if (typeof calificacionActual[p] === 'undefined') calificacionActual[p] = 0;
+        const div = document.createElement('div');
+        div.className = 'parametro';
+        const label = document.createElement('label');
+        label.textContent = p;
+        const estrellas = document.createElement('div');
+        estrellas.className = 'estrellas';
+        div.appendChild(label);
+        div.appendChild(estrellas);
+        contenedor.appendChild(div);
+        for (let i = 1; i <= 5; i++) {
+          const btn = document.createElement('button');
+          btn.type = 'button';
+          btn.textContent = i;
+          if (i <= calificacionActual[p]) btn.classList.add('activo');
+          btn.addEventListener('click', () => {
+            calificacionActual[p] = i;
+            Array.from(estrellas.children).forEach(b => b.classList.remove('activo'));
+            for (let j = 0; j < i; j++) estrellas.children[j].classList.add('activo');
+          });
+          estrellas.appendChild(btn);
+        }
+      });
+    }
+
+    function guardarLocal() {
+      localStorage.setItem('calificaciones_app_educativa', JSON.stringify(entradas));
+    }
+
+    function actualizarEstadisticas() {
+      totalEntradasEl.textContent = entradas.length;
+      if (entradas.length === 0) {
+        promedioGeneralEl.textContent = 0;
+        listaComentarios.innerHTML = '<p>No hay calificaciones aún.</p>';
+        return;
+      }
+      const totalPromedios = entradas.reduce((acc, e) => acc + (Number(e.promedio) || 0), 0);
+      const promGeneral = (totalPromedios / entradas.length).toFixed(2);
+      promedioGeneralEl.textContent = promGeneral;
+      listaComentarios.innerHTML = entradas.slice(0, 10).map(e => `
+        <div style='border-bottom:1px solid #ddd; padding:6px 0;'>
+          <small>${new Date(e.fecha).toLocaleString()}</small><br>
+          <strong>${e.nombre}</strong><br>
+          Promedio total: ${e.promedio} / 5<br>
+          ${e.comentario ? `<em>"${e.comentario}"</em>` : ''}
+        </div>
+      `).join('');
+    }
+
+    document.getElementById('formulario').addEventListener('submit', e => {
+      e.preventDefault();
+      const nombre = document.getElementById('nombre').value || 'Anónimo';
+      const comentario = document.getElementById('comentario').value.trim();
+      parametros.forEach(p => {
+        if (typeof calificacionActual[p] === 'undefined') calificacionActual[p] = 3;
+        calificacionActual[p] = Number(calificacionActual[p]);
+      });
+      const sumaFactores = parametros.reduce((acc, p) => acc + (Number(calificacionActual[p]) || 0), 0);
+      const promedioFinal = +(sumaFactores / parametros.length).toFixed(2);
+      const nueva = {id: Date.now(), fecha: new Date().toISOString(), nombre, comentario, promedio: promedioFinal};
+      entradas.unshift(nueva);
+      guardarLocal();
+      actualizarEstadisticas();
+      e.target.reset();
+      calificacionActual = {};
+      renderParametros();
     });
 
-    // Calcular promedio final de los 8 factores
-    const sumaFactores = parametros.reduce((acc, p) => acc + (Number(calificacionActual[p]) || 0), 0);
-    const promedioFinal = +(sumaFactores / parametros.length).toFixed(2);
+    document.getElementById('btn-limpiar').addEventListener('click', () => {
+      document.getElementById('formulario').reset();
+      calificacionActual = {};
+      renderParametros();
+    });
 
-    // Crear entrada que guarda SÓLO el promedio (y opcionalmente los detalles si quieres)
-    const nueva = {
-      id: Date.now(),
-      fecha: new Date().toISOString(),
-      nombre,
-      comentario,
-      promedio: promedioFinal,
-      // detalles: { ...calificacionActual } // opcional: guarda las 8 si lo necesitas más tarde
-    };
+    document.getElementById('btn-borrar').addEventListener('click', () => {
+      if (!confirm('¿Borrar todas las entradas guardadas?')) return;
+      entradas = [];
+      guardarLocal();
+      actualizarEstadisticas();
+    });
 
-    entradas.unshift(nueva);
-    guardarLocal();
-    actualizarEstadisticas();
-
-    // Reset formulario y volver a renderizar controles (si quieres valores por defecto)
-    e.target.reset();
-    // Reiniciar calificacionActual a valores por defecto (3)
-    calificacionActual = {};
-    renderParametros();
-  });
-
-  // Limpiar form visual sin borrar entradas
-  document.getElementById('btn-limpiar').addEventListener('click', () => {
-    document.getElementById('formulario').reset();
-    calificacionActual = {};
-    renderParametros();
-  });
-
-  // Borrar todo
-  document.getElementById('btn-borrar').addEventListener('click', () => {
-    if (!confirm('¿Borrar todas las entradas guardadas?')) return;
-    entradas = [];
-    guardarLocal();
-    actualizarEstadisticas();
-  });
-
-  // Descargar resultados en PDF
-document.getElementById('btn-pdf').addEventListener('click', () => {
-  if (entradas.length === 0) return alert('No hay datos para exportar');
-
-  const { jsPDF } = window.jspdf;
-  const doc = new jsPDF();
-  let y = 20;
-
-  doc.setFontSize(16);
-  doc.text('Reporte de Calificaciones - Aplicativo Educativo', 10, y);
-  y += 10;
-
-  doc.setFontSize(12);
-  entradas.slice(0, 10).forEach((e, idx) => {
-    doc.text(`Entrada ${idx + 1}`, 10, y);
-    y += 6;
-    doc.text(`Fecha: ${new Date(e.fecha).toLocaleString()}`, 10, y);
-    y += 6;
-    doc.text(`Nombre: ${e.nombre}`, 10, y);
-    y += 6;
-    doc.text(`Promedio: ${e.promedio} / 5`, 10, y);
-    y += 6;
-    if (e.comentario) {
-      doc.text(`Comentario: ${e.comentario}`, 10, y);
+    document.getElementById('btn-pdf').addEventListener('click', () => {
+      if (entradas.length === 0) return alert('No hay datos para exportar');
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+      let y = 20;
+      doc.setFontSize(16);
+      doc.text('Reporte de Calificaciones - Aplicativo Educativo', 10, y);
       y += 10;
-    } else {
-      y += 4;
-    }
-    if (y > 270) { doc.addPage(); y = 20; }
-  });
+      doc.setFontSize(12);
+      entradas.slice(0, 10).forEach((e, idx) => {
+        doc.text(`Entrada ${idx + 1}`, 10, y); y += 6;
+        doc.text(`Fecha: ${new Date(e.fecha).toLocaleString()}`, 10, y); y += 6;
+        doc.text(`Nombre: ${e.nombre}`, 10, y); y += 6;
+        doc.text(`Promedio: ${e.promedio} / 5`, 10, y); y += 6;
+        if (e.comentario) { doc.text(`Comentario: ${e.comentario}`, 10, y); y += 10; }
+        else { y += 4; }
+        if (y > 270) { doc.addPage(); y = 20; }
+      });
+      doc.save('reporte_calificaciones.pdf');
+    });
 
-  doc.save('reporte_calificaciones.pdf');
-});
+    renderParametros();
+    actualizarEstadisticas();
 
-
-  // Inicializar
-  renderParametros();
-  actualizarEstadisticas();
-</script>
-
+    // 🔹 Navegación
+    const botones = document.querySelectorAll('.nav-btn');
+    const secciones = document.querySelectorAll('section');
+    botones.forEach(boton => {
+      boton.addEventListener('click', () => {
+        botones.forEach(b => b.classList.remove('activo'));
+        secciones.forEach(s => s.classList.remove('activo'));
+        boton.classList.add('activo');
+        document.getElementById(boton.dataset.seccion).classList.add('activo');
+      });
+    });
+  </script>
 </body>
 </html>
