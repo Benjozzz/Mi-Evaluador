@@ -7,29 +7,38 @@
   <style>
   body {
     font-family: Arial, sans-serif;
-    background-color: #f8f9fa;
     margin: 0;
     padding: 0;
+    background-image: url("fondo CS.jpeg");
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-attachment: fixed; 
+    background-position: center;
   }
+
   .container {
     max-width: 900px;
     margin: 40px auto;
-    background: #fff;
+    background: rgba(255, 255, 255, 0.9); /* 🔹 color blanco semitransparente */
     border-radius: 12px;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
     padding: 20px;
   }
+
   h1 {
     text-align: center;
   }
+
   .parametro {
     margin-bottom: 20px;
   }
+
   .estrellas {
     display: flex;
     gap: 8px;
     margin-top: 5px;
   }
+
   .estrella-btn {
     width: 40px;
     height: 40px;
@@ -41,16 +50,18 @@
     cursor: pointer;
     transition: background 0.2s, transform 0.1s;
   }
+
   .estrella-btn:hover {
     background-color: #ffe082;
     transform: scale(1.1);
   }
+
   .estrella-btn.activo {
     background-color: #ffc107;
     color: #000;
   }
-  
-.estrellas button {
+
+  .estrellas button {
     background-color: #f4f4f4;
     border: 1px solid #aaa;
     margin: 2px;
@@ -69,6 +80,7 @@
     color: white;
     border-color: orange;
   }
+</style>
 
 
 </style>
